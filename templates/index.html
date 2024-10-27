@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>API Consultorio Veterinario</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>API Consultorio Veterinario</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Añadir Persona</h2>
+            <input type="text" id="nombre" placeholder="Nombre">
+            <input type="text" id="fecha_nacimiento" placeholder="Fecha de Nacimiento (YYYY-MM-DD)">
+            <input type="text" id="sexo" placeholder="Sexo">
+            <input type="text" id="correo" placeholder="Correo">
+            <input type="text" id="telefono" placeholder="Teléfono">
+            <input type="text" id="domicilio" placeholder="Domicilio">
+            <button id="add-person">Añadir Persona</button>
+        </section>
+
+        <section>
+            <h2>Actualizar Persona</h2>
+            <input type="number" id="update-id" placeholder="ID de Persona">
+            <input type="text" id="update-nombre" placeholder="Nuevo Nombre">
+            <button id="update-person">Actualizar Persona</button>
+        </section>
+
+        <section>
+            <h2>Eliminar Persona</h2>
+            <input type="number" id="delete-id" placeholder="ID de Persona a Eliminar">
+            <button id="delete-person">Eliminar Persona</button>
+        </section>
+
+        <section>
+            <h2>Listar Personas</h2>
+            <button id="list-persons">Listar Personas</button>
+            <ul id="person-list"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Consultorio Veterinario &copy; 2024</p>
+    </footer>
+
+    <script>
+        // Función para añadir persona
+        $('#add-person').click(function() {
+            const data = {
+                nombre: $('#nombre').val(),
+                fecha_nacimiento: $('#fecha_nacimiento').val(),
+                sexo: $('#sexo').val(),
+                correo: $('#correo').val(),
+                telefono: $('#telefono').val(),
+                domicilio: $('#domicilio').val()
+            };
+            $.ajax({
+                url: '/personas',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    alert('Persona añadida con ID: ' + response.id);
+                },
+                error: function(error) {
+                    alert('Error al añadir persona');
+                }
+            });
+        });
+
+        // Función para actualizar persona
+        $('#update-person').click(function() {
+            const id = $('#update-id').val();
+            const newName = $('#update-nombre').val();
+            $.ajax({
+                url: '/personas/' + id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({ nombre: newName }),
+                success: function(response) {
+                    alert('Persona actualizada');
+                },
+                error: function(error) {
+                    alert('Error al actualizar persona');
+                }
+            });
+        });
+
+        // Función para eliminar persona
+        $('#delete-person').click(function() {
+            const id = $('#delete-id').val();
+            $.ajax({
+                url: '/personas/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    alert('Persona eliminada');
+                },
+                error: function(error) {
+                    alert('Error al eliminar persona');
+                }
+            });
+        });
+
+        // Función para listar personas
+        $('#list-persons').click(function() {
+            $.ajax({
+                url: '/personas',
+                type: 'GET',
+                success: function(personas) {
+                    $('#person-list').empty();
+                    personas.forEach(persona => {
+                        $('#person-list').append('<li>' + persona.nombre + ' (ID: ' + persona.id + ')</li>');
+                    });
+                },
+                error: function(error) {
+                    alert('Error al listar personas');
+                }
+            });
+        });
+
+        // Cargar personas al cargar la página
+        $(document).ready(function() {
+            fetch('/personas')
+                .then(response => response.json())
+                .then(data => {
+                    const personasDiv = document.getElementById('person-list');
+                    personasDiv.innerHTML = '';
+                    data.forEach(persona => {
+                        personasDiv.innerHTML += `<li>${persona.nombre} (ID: ${persona.id})</li>`;
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
